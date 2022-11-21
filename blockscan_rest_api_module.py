@@ -16,7 +16,14 @@ class XdcAndXrc20TransactionsByWallet:
         self.xdc_url = f"{self.base_url_of_block_scan}/txs/listByAccount/{self.wallet_address}?tx_type=all"
         self.xrc20_url = f"{self.base_url_of_block_scan}/token-txs/xrc20?holder={self.wallet_address}"
 
-    def transaction_parser(self, transactions):
+    def transaction_parser(self, transactions: list) -> None:
+        """
+        Loop over the transactions. If symbol unknown then check its value. If the value is equal to 0 then pass, else
+        make the symbol XDC and add item to transaction_list.
+        If the symbol is known then add item to transaction list. 
+        
+        :param transactions: 
+        """
         for item in transactions:
             if "symbol" not in item.keys():
                 if item['value'] == 0:
