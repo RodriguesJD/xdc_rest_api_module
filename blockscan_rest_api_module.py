@@ -16,6 +16,17 @@ class XdcAndXrc20TransactionsByWallet:
         self.xdc_url = f"{self.base_url_of_block_scan}/txs/listByAccount/{self.wallet_address}?tx_type=all"
         self.xrc20_url = f"{self.base_url_of_block_scan}/token-txs/xrc20?holder={self.wallet_address}"
 
+    def transaction_parser(self, transactions):
+        for item in transactions:
+            if "symbol" not in item.keys():
+                if item['value'] == 0:
+                    pass
+                else:
+                    item["symbol"] = "XDC"
+                    self.transactions_list.append(item)
+            else:
+                self.transactions_list.append(item)
+
     def get_block_scan_data_from_server(self, url: str) -> int:
         """
         Request to the server using the parameter url. Collect the total page and the transaction data. Then add the
@@ -36,17 +47,6 @@ class XdcAndXrc20TransactionsByWallet:
     def paginate_request(self, url):
         response = requests.get(url).json()
         return response
-
-    def transaction_parser(self, transactions):
-        for item in transactions:
-            if "symbol" not in item.keys():
-                if item['value'] == 0:
-                    pass
-                else:
-                    item["symbol"] = "XDC"
-                    self.transactions_list.append(item)
-            else:
-                self.transactions_list.append(item)
 
     def pagination_page_counter(self, base_url, total_pages):
         if total_pages > 1:

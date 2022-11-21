@@ -24,3 +24,4 @@ class TestXdcAndXrc20TransactionsByWallet:
         url = 'https://xdc.blocksscan.io/api/txs/listByAccount/xdc33aab4f3e5500c27bb643cf9e503ba0d8939a8c9?tx_type=all'
         total_pages = self.xdc_tx_class.get_block_scan_data_from_server(url=url)
         assert isinstance(total_pages, int)
+
