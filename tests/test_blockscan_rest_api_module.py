@@ -56,6 +56,12 @@ class TestXdcAndXrc20TransactionsByWallet:
         tx_list.clear()
         assert len(tx_list) == 0
 
+    def test_paginate_request(self):
+        """
+        This is much like get_block_scan_data_from_server but it simply calls the url and returns the response.
+        """
+        assert isinstance(self.xdc_tx_class.paginate_request(url=self.test_url), dict)
+
     def test_wallet_transaction(self):
         all_wallet_transactions = self.xdc_tx_class.main()
         assert isinstance(all_wallet_transactions, list)

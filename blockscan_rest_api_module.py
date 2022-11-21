@@ -51,7 +51,13 @@ class XdcAndXrc20TransactionsByWallet:
 
         return total_pages
 
-    def paginate_request(self, url):
+    def paginate_request(self, url: str) -> dict:
+        """
+        Simply use the url var to make a requests to the server. Return the json
+
+        :param url: str
+        :return response: dict
+        """
         response = requests.get(url).json()
         return response
 
