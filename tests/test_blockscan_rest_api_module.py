@@ -62,7 +62,7 @@ class TestXdcAndXrc20TransactionsByWallet:
         """
         assert isinstance(self.xdc_tx_class.paginate_request(url=self.test_url), dict)
 
-    def test_wallet_transaction(self):
+    def test_main(self):
         all_wallet_transactions = self.xdc_tx_class.main()
         assert isinstance(all_wallet_transactions, list)
 

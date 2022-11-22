@@ -3,6 +3,22 @@ from pprint import pprint
 import json
 
 
+def blockscan_response(url):
+    response = requests.get(url=f"{url}")
+    print(url)
+    print(response.status_code)
+    headers = response.headers
+    print(f"total: {response.json()['total']}")
+    print(f"perpage:{response.json()['perPage']}")
+    print(f"currentpage: {response.json()['currentPage']}")
+    print(f"pages: {response.json()['pages']}")
+    print(f"items: {response.json()['items']}")
+    pprint(response.json().keys())
+
+    print("\n\n")
+    return response
+
+
 class XdcAndXrc20TransactionsByWallet:
 
     transactions_list = []
@@ -43,7 +59,8 @@ class XdcAndXrc20TransactionsByWallet:
         :param url: This is built from the base_url_of_block_scan var.
         :return total_pages: The total number of pages that are needed to collect all the transaction data.
         """
-        response = requests.get(url=f"{url}").json()
+        response = blockscan_response(url=url).json()
+
         transactions = response["items"]
         total_pages = response["pages"]
 
@@ -58,7 +75,8 @@ class XdcAndXrc20TransactionsByWallet:
         :param url: str
         :return response: dict
         """
-        response = requests.get(url).json()
+        response = blockscan_response(url=url).json()
+
         return response
 
     def pagination_page_counter(self, base_url, total_pages):
@@ -67,22 +85,17 @@ class XdcAndXrc20TransactionsByWallet:
                 self.page_number += 1
                 url = f"{base_url}?page={self.page_number}"
                 if "token-txs/" in url:
-                    pagination_response = self.paginate_request(url=f"{base_url}&page={self.page_number}")
+                    # xrc-20s
+                    pagination_response = blockscan_response(url=f"{base_url}&page={self.page_number}").json()
                 else:
-                    pagination_response = self.paginate_request(url=f"{base_url}?page={self.page_number}")
+                    # not xrc-20
+                    pagination_response = blockscan_response(url=f"{base_url}?page={self.page_number}").json()
 
                 transactions = pagination_response["items"]
                 self.transaction_parser(transactions=transactions)
                 total_pages -= 1
 
         self.page_number = 1
-
-    def post_collection_data(self):
-        txs = self.transactions_list
-        print(f"list_size:{len(txs)}")
-
-        for transaction in txs:
-            print(transaction['blockNumber'])
 
     def main(self):
         scan_xdc_and_return_total_pages = self.get_block_scan_data_from_server(url=self.xdc_url)
@@ -93,7 +106,12 @@ class XdcAndXrc20TransactionsByWallet:
         xrc20_total_pages = scan_xrc20s_and_return_page_number
         self.pagination_page_counter(base_url=self.xrc20_url, total_pages=xrc20_total_pages)
 
-        # self.post_collection_data()
         return self.transactions_list
 
 
+if __name__ == "__main__":
+    wallet_info = ["brad_decent_wallet", "xdc33aab4f3e5500c27bb643cf9e503ba0d8939a8c9"]
+    wallet_name = wallet_info[0]
+    wallet_address = wallet_info[1]
+    xdc_tx_class = XdcAndXrc20TransactionsByWallet(wallet_address=wallet_address,
+                                                   wallet_base_dir=wallet_name).main()
