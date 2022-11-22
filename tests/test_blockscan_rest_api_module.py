@@ -28,39 +28,33 @@ class TestXdcAndXrc20TransactionsByWallet:
         test_transactions = response["items"]
         tx_list = self.xdc_tx_class.transactions_list
         assert len(tx_list) == 0
-        self.xdc_tx_class.transaction_parser(transactions=test_transactions)
+        self.xdc_tx_class._transaction_parser(transactions=test_transactions)
         assert len(tx_list) > 0
         tx_list.clear()
         assert len(tx_list) == 0
 
-    def test_get_block_scan_data_from_server(self):
+    def test_get_block_scan_transactions_from_server(self):
         """
-        get_block_scan_data_from_server makes the first call to the api endpoint. Then it stores the xdc transaction
+        get_block_scan_transactions_from_server calls to the api endpoint. Then it stores the xdc transaction
         data and returns the total number of pages needed to get all the wallet's transaction data.
 
         Note: I test that the transaction_list var from the class is empty. That way i know that
-        get_block_scan_data_from_server hasn't added anything to that var yet.
+        get_block_scan_transactions_from_server hasn't added anything to that var yet.
 
         Then I call get_block_scan_data_from_server which should have now added dicts to the transaction_list var.
 
         I then test that the transaction list is now populated.
 
-        Then I clear it so it won't screw up testing functions below this one.
+        Then I clear it, so it won't screw up testing functions below this one.
 
         """
         tx_list = self.xdc_tx_class.transactions_list
         assert len(tx_list) == 0
-        total_pages = self.xdc_tx_class.get_block_scan_data_from_server(url=self.test_url)
+        total_pages = self.xdc_tx_class._get_block_scan_transactions_from_server(coin_is_xrc20=False)
         assert isinstance(total_pages, int)
         assert len(tx_list) > 0
         tx_list.clear()
         assert len(tx_list) == 0
-
-    def test_paginate_request(self):
-        """
-        This is much like get_block_scan_data_from_server but it simply calls the url and returns the response.
-        """
-        assert isinstance(self.xdc_tx_class.paginate_request(url=self.test_url), dict)
 
     def test_main(self):
         all_wallet_transactions = self.xdc_tx_class.main()
@@ -69,4 +63,12 @@ class TestXdcAndXrc20TransactionsByWallet:
         for transaction in all_wallet_transactions:
             assert isinstance(transaction, dict)
             # todo confirm the dict keys in the transactions.
+            key_list = ['_id', 'type', 'baseGasPrice', 'status', 'i_tx', 'blockHash', 'blockNumber', 'from', 'gas',
+                        'gasPrice', 'hash', 'input', 'nonce', 'to', 'transactionIndex', 'value', 'createdAt',
+                        'updatedAt', 'cumulativeGasUsed', 'from_model', 'gasUsed', 'timestamp', 'to_model', 'symbol',
+                        'transactionHash', 'address', 'data', 'valueNumber', 'decimals', 'coingeckoID', 'fiatValue',
+                        'blockTime']
+            for key in list(transaction.keys()):
+                assert key in key_list
+
 
