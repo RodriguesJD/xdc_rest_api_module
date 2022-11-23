@@ -1,32 +1,36 @@
 import requests
 from pprint import pprint
 import json
+import datetime
+
+# TODO create a new class for creating the folder structure per each run
 
 
-def blockscan_response(url):
-    response = requests.get(url=f"{url}")
-    print(response.json()["items"][0].keys())
-    # print(url)
-    # print(response.status_code)
-    # headers = response.headers
-    # print(f"total: {response.json()['total']}")
-    # print(f"perpage:{response.json()['perPage']}")
-    # print(f"currentpage: {response.json()['currentPage']}")
-    # print(f"pages: {response.json()['pages']}")
-    # print(f"items: {response.json()['items']}")
-    # pprint(response.json().keys())
-    # print("\n\n")
-    return response
-
+def write_json_data(filename, data_to_dump):
+    with open(f"{filename}.json", "w") as write_file:
+        json.dump(data_to_dump, write_file)
 
 class XdcAndXrc20TransactionsByWallet:
 
     transactions_list = []
     page_number = 1
+    http_request_counter = 0
 
     def __init__(self, wallet_address, wallet_base_dir):
         self.wallet_address = wallet_address
         self.wallet_base_dir = wallet_base_dir
+
+    def blockscan_response(self, url):
+        self.http_request_counter += 1
+        response = requests.get(url=f"{url}")
+        time_stamp = datetime.datetime.now().strftime("%d-%m-%Y_time_%X_milsec%f")
+        file_name = f"{time_stamp}_blockscan_response"
+        data_to_dump = dict(response.json())
+        data_to_dump["url"] = url
+        data_to_dump["headers"] = json.dumps(dict(response.headers))
+        write_json_data(filename=file_name, data_to_dump=data_to_dump)
+
+        return response
 
     def _transaction_parser(self, transactions: list) -> None:
         """
@@ -69,13 +73,13 @@ class XdcAndXrc20TransactionsByWallet:
         while get_more_pages:
             if current_page == 1:
                 if coin_is_xrc20:
-                    response = blockscan_response(url=xrc20_url).json()
+                    response = self.blockscan_response(url=xrc20_url).json()
                     transactions = response["items"]
                     total_pages = response["pages"]
                     self._transaction_parser(transactions=transactions)
 
                 elif not coin_is_xrc20:
-                    response = blockscan_response(url=xdc_url).json()
+                    response = self.blockscan_response(url=xdc_url).json()
                     transactions = response["items"]
                     total_pages = response["pages"]
                     self._transaction_parser(transactions=transactions)
@@ -88,13 +92,13 @@ class XdcAndXrc20TransactionsByWallet:
             else:
                 if coin_is_xrc20:
                     xrc20_pagination_url = f"{xrc20_url}&page={current_page}"
-                    response = blockscan_response(url=xrc20_pagination_url).json()
+                    response = self.blockscan_response(url=xrc20_pagination_url).json()
                     transactions = response["items"]
                     self._transaction_parser(transactions=transactions)
 
                 elif not coin_is_xrc20:
                     xrc_pagination_url = f"{xdc_url}?page={current_page}"
-                    response = blockscan_response(url=xrc_pagination_url).json()
+                    response = self.blockscan_response(url=xrc_pagination_url).json()
                     transactions = response["items"]
                     self._transaction_parser(transactions=transactions)
 

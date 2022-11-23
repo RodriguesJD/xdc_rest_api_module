@@ -7,9 +7,6 @@ wallet_name = wallet_info[0]
 wallet_address = wallet_info[1]
 
 
-
-
-
 class TestXdcAndXrc20TransactionsByWallet:
 
     xdc_tx_class = XdcAndXrc20TransactionsByWallet(wallet_address=wallet_address,
@@ -70,5 +67,14 @@ class TestXdcAndXrc20TransactionsByWallet:
                         'blockTime']
             for key in list(transaction.keys()):
                 assert key in key_list
+
+
+def test_transaction_count_matches_json_count():
+    """
+    The number of json file created with the f"{time_stamp}_blockscan_response".json should be the same as the
+    transaction counter
+    :return:
+    """
+    pass
 
 
