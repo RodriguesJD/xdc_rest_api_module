@@ -13,6 +13,13 @@ class TestXdcAndXrc20TransactionsByWallet:
                                                    wallet_base_dir=wallet_name)
     test_url = 'https://xdc.blocksscan.io/api/txs/listByAccount/xdc33aab4f3e5500c27bb643cf9e503ba0d8939a8c9?tx_type=all'
 
+    def test_blockscan_response(self):
+        response = self.xdc_tx_class._blockscan_response_and_json_dump(url=self.test_url)
+        assert response.json()
+        assert str(response) == "<Response [200]>"
+        # <class 'requests.models.Response'>
+        assert str(response.status_code) == "200"
+
     def test_transaction_parser(self):
         """
         Gather transactions. Then pass it to the transaction_parser function. Check that the transaction list is empty
