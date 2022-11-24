@@ -35,13 +35,12 @@ class DumpXdcDataToJsonFile:
 
 class XdcAndXrc20TransactionsByWallet:
 
-    transactions_list = []
-    page_number = 1
-    http_request_counter = 0
-
     def __init__(self, wallet_address: str, directory_path=Path.cwd()):
         self.wallet_address = wallet_address
         self.directory_path = directory_path
+        self.transactions_list = []
+        self.page_number = 1
+        self.http_request_counter = 0
 
     def _blockscan_response_and_json_dump(self, url: str) -> requests.models.Response:
         """
