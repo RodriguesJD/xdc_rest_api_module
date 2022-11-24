@@ -2,13 +2,35 @@ import requests
 from pprint import pprint
 import json
 import datetime
+import os
+from pathlib import Path
 
-# TODO create a new class for creating the folder structure per each run
 
+class DumpXdcDataToJsonFile:
 
-def write_json_data(filename, data_to_dump):
-    with open(f"{filename}.json", "w") as write_file:
-        json.dump(data_to_dump, write_file)
+    def __init__(self, filename, data_to_dump, directory_path=Path.cwd()):
+        self.filename = filename
+        self.data_to_dump = data_to_dump
+        self.directory_path = directory_path
+
+    def main(self):
+        """
+        If path doesnt exist then create it.
+
+        Write data to a json file using the defualt or provided directory path.
+
+        """
+        if Path.exists(self.directory_path):
+            pass
+        else:
+            Path(self.directory_path).mkdir(parents=True, exist_ok=True)
+
+        if ".json" in self.filename:
+            self.filename = Path(f"{str(self.filename).replace('.json', '')}")  # if .json in file, remove it
+
+        file_with_path = f"{self.directory_path}/{self.filename}.json"
+        with open(file_with_path, "w") as write_file:
+            json.dump(self.data_to_dump, write_file)
 
 
 class XdcAndXrc20TransactionsByWallet:
@@ -17,9 +39,9 @@ class XdcAndXrc20TransactionsByWallet:
     page_number = 1
     http_request_counter = 0
 
-    def __init__(self, wallet_address, wallet_base_dir):
+    def __init__(self, wallet_address: str, directory_path=Path.cwd()):
         self.wallet_address = wallet_address
-        self.wallet_base_dir = wallet_base_dir
+        self.directory_path = directory_path
 
     def _blockscan_response_and_json_dump(self, url: str) -> requests.models.Response:
         """
@@ -33,7 +55,7 @@ class XdcAndXrc20TransactionsByWallet:
         Create dict to be used for writing json for each http request.
         
         Pass dict to the write_to_dump func
-        
+
         :param url: 
         :return resonse: 
         """
@@ -41,13 +63,12 @@ class XdcAndXrc20TransactionsByWallet:
         # TODO turn write to json off by defualt
         self.http_request_counter += 1
         response = requests.get(url=f"{url}")
-        time_stamp = datetime.datetime.now().strftime("%d-%m-%Y_time_%X_milsec%f")
+        time_stamp = datetime.datetime.now().strftime("%d-%m-%Y_time_%X_milsec_%f")
         file_name = f"{time_stamp}_blockscan_response"
         data_to_dump = dict(response.json())
         data_to_dump["url"] = url
         data_to_dump["headers"] = json.dumps(dict(response.headers))
-        write_json_data(filename=file_name, data_to_dump=data_to_dump)
-        print(type(response))
+        DumpXdcDataToJsonFile(filename=file_name, data_to_dump=data_to_dump, directory_path=self.directory_path).main()
         return response
 
     def _transaction_parser(self, transactions: list) -> None:
@@ -141,6 +162,8 @@ if __name__ == "__main__":
     wallet_info = ["brad_decent_wallet", "xdc33aab4f3e5500c27bb643cf9e503ba0d8939a8c9"]
     wallet_name = wallet_info[0]
     wallet_address = wallet_info[1]
+    path_to_dump_json = Path(f"{Path.cwd()}/each_run/{datetime.datetime.now().strftime('%d-%m-%Y_time_%X_milsec_%f')}"
+                             f"/blockscan_http_get_responses/")
     xdc_tx_class = XdcAndXrc20TransactionsByWallet(wallet_address=wallet_address,
-                                                   wallet_base_dir=wallet_name).main()
+                                                   directory_path=path_to_dump_json).main()
 

@@ -1,6 +1,9 @@
 import requests
-
-from blockscan_rest_api_module import XdcAndXrc20TransactionsByWallet
+from pathlib import Path
+import shutil
+import datetime
+import json
+from blockscan_rest_api_module import XdcAndXrc20TransactionsByWallet, DumpXdcDataToJsonFile
 
 wallet_info = ["brad_decent_wallet", "xdc33aab4f3e5500c27bb643cf9e503ba0d8939a8c9"]
 wallet_name = wallet_info[0]
@@ -9,8 +12,11 @@ wallet_address = wallet_info[1]
 
 class TestXdcAndXrc20TransactionsByWallet:
 
-    xdc_tx_class = XdcAndXrc20TransactionsByWallet(wallet_address=wallet_address,
-                                                   wallet_base_dir=wallet_name)
+    path_to_dump_json = Path(f"{Path.cwd()}/temp_path/each_run/"
+                             f"{datetime.datetime.now().strftime('%d-%m-%Y_time_%X_milsec_%f')}"
+                             f"/blockscan_http_get_responses/")
+
+    xdc_tx_class = XdcAndXrc20TransactionsByWallet(wallet_address=wallet_address, directory_path=path_to_dump_json)
     test_url = 'https://xdc.blocksscan.io/api/txs/listByAccount/xdc33aab4f3e5500c27bb643cf9e503ba0d8939a8c9?tx_type=all'
 
     def test_blockscan_response(self):
@@ -76,12 +82,38 @@ class TestXdcAndXrc20TransactionsByWallet:
                 assert key in key_list
 
 
-def test_transaction_count_matches_json_count():
-    """
-    The number of json file created with the f"{time_stamp}_blockscan_response".json should be the same as the
-    transaction counter
-    :return:
-    """
-    pass
+class TestDumpXdcDataToJsonFile:
 
+    file_name = "test_file.json"
+    directory_path = Path(f"{Path.cwd()}/temp_path")
+    complete_path = Path(f"{directory_path}/{file_name}") #  Mising json becuase the function adds
 
+    data_to_dump = {"test": "testing"}
+
+    dump_data_to_json = DumpXdcDataToJsonFile(filename=file_name,
+                                              data_to_dump=data_to_dump,
+                                              directory_path=directory_path)
+
+    def test_path_does_not_exist(self):
+        """
+        If the testing path exist then remove it.
+        """
+        if self.directory_path.is_dir():
+            shutil.rmtree(self.directory_path)
+        assert not self.directory_path.is_dir()
+
+    def test_dir_and_file_have_been_created(self):
+        """
+        Run class test that the dir and file was made.
+        """
+        self.dump_data_to_json.main()
+        assert self.directory_path.is_dir()
+        assert self.complete_path.is_file()
+
+    def test_file_has_correct_data(self):
+        """
+        Confirm the correct data was written to the file.
+        """
+        with open(self.complete_path, "r") as read_file:
+            data = json.load(read_file)
+            assert data["test"] == "testing"
