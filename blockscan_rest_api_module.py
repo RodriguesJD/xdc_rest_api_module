@@ -154,7 +154,7 @@ class XdcAndXrc20TransactionsByWallet:
         # Collect xrc-20 transactions
         self._get_block_scan_transactions_from_server(coin_is_xrc20=True)
 
-        return self.transactions_list
+        return self.transactions_list, self.http_request_counter
 
 
 if __name__ == "__main__":

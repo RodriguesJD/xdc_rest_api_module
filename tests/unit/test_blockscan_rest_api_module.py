@@ -68,9 +68,9 @@ class TestXdcAndXrc20TransactionsByWallet:
 
     def test_main(self):
         all_wallet_transactions = self.xdc_tx_class.main()
-        assert isinstance(all_wallet_transactions, list)
+        assert isinstance(all_wallet_transactions[0], list)
 
-        for transaction in all_wallet_transactions:
+        for transaction in all_wallet_transactions[0]:
             assert isinstance(transaction, dict)
             # todo confirm the dict keys in the transactions.
             key_list = ['_id', 'type', 'baseGasPrice', 'status', 'i_tx', 'blockHash', 'blockNumber', 'from', 'gas',
@@ -86,7 +86,7 @@ class TestDumpXdcDataToJsonFile:
 
     file_name = "test_file.json"
     directory_path = Path(f"{Path.cwd()}/temp_path")
-    complete_path = Path(f"{directory_path}/{file_name}") #  Mising json becuase the function adds
+    complete_path = Path(f"{directory_path}/{file_name}")  # Mising json becuase the function adds
 
     data_to_dump = {"test": "testing"}
 
